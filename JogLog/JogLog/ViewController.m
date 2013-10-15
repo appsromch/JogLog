@@ -190,11 +190,7 @@
     scrollView.pagingEnabled = YES;
     scrollView.scrollEnabled = YES;
     scrollView.delegate = self;
-    //scrollView.contentSize = CGSizeMake(960, scrollView.frame.size.height); // 2 pages wide.
-    //scrollView.contentSize = CGSizeMake(scrollView.frame.size.width*2, scrollView.frame.size.height); // 2 pages wide.
-    NSLog(@"ContentSize %@", NSStringFromCGSize(scrollView.contentSize));
     scrollView.contentSize =  CGSizeMake(scrollView.frame.size.width*2, scrollView.frame.size.height);
-    NSLog(@"ContentSize %@", NSStringFromCGSize(scrollView.contentSize));
 }
 
 -(void)initializeLocationProperties

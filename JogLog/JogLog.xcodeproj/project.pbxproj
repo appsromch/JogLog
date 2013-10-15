@@ -56,6 +56,8 @@
 		42963347180D3EC200537D0A /* player_start.png in Resources */ = {isa = PBXBuildFile; fileRef = 4296333F180D3EC200537D0A /* player_start.png */; };
 		42963349180D3ECD00537D0A /* noartwork.png in Resources */ = {isa = PBXBuildFile; fileRef = 42963348180D3ECD00537D0A /* noartwork.png */; };
 		4296334A180D3ECD00537D0A /* noartwork.png in Resources */ = {isa = PBXBuildFile; fileRef = 42963348180D3ECD00537D0A /* noartwork.png */; };
+		4296334C180D417400537D0A /* README.txt in Resources */ = {isa = PBXBuildFile; fileRef = 4296334B180D417300537D0A /* README.txt */; };
+		4296334D180D417400537D0A /* README.txt in Resources */ = {isa = PBXBuildFile; fileRef = 4296334B180D417300537D0A /* README.txt */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -111,6 +113,7 @@
 		4296333E180D3EC200537D0A /* player_fwd.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = player_fwd.png; sourceTree = "<group>"; };
 		4296333F180D3EC200537D0A /* player_start.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = player_start.png; sourceTree = "<group>"; };
 		42963348180D3ECD00537D0A /* noartwork.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = noartwork.png; sourceTree = "<group>"; };
+		4296334B180D417300537D0A /* README.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = README.txt; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -185,6 +188,7 @@
 				429632EC180D0E6B00537D0A /* Main.storyboard */,
 				429632EF180D0E6B00537D0A /* ViewController.h */,
 				429632F0180D0E6B00537D0A /* ViewController.m */,
+				4296334B180D417300537D0A /* README.txt */,
 				42963338180D29E800537D0A /* Run.h */,
 				42963339180D29E800537D0A /* Run.m */,
 				42963333180D0FAE00537D0A /* Custom UI Classes */,
@@ -336,6 +340,7 @@
 				42963320180D0EED00537D0A /* 194-note-2.png in Resources */,
 				429632F3180D0E6B00537D0A /* Images.xcassets in Resources */,
 				42963318180D0EED00537D0A /* 139-flags.png in Resources */,
+				4296334C180D417400537D0A /* README.txt in Resources */,
 				42963342180D3EC200537D0A /* player_pause.png in Resources */,
 				42963346180D3EC200537D0A /* player_start.png in Resources */,
 				429632E5180D0E6B00537D0A /* InfoPlist.strings in Resources */,
@@ -364,6 +369,7 @@
 				42963321180D0EED00537D0A /* 194-note-2.png in Resources */,
 				42963347180D3EC200537D0A /* player_start.png in Resources */,
 				42963341180D3EC200537D0A /* player_play.png in Resources */,
+				4296334D180D417400537D0A /* README.txt in Resources */,
 				42963311180D0ECF00537D0A /* track.gpx in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
