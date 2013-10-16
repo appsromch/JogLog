@@ -24,11 +24,12 @@
     [super layoutSubviews];
     
     CGRect imageViewFrame = self.imageView.frame;
-    imageViewFrame.origin.x += 5;
-    imageViewFrame.origin.y += 5;
-    imageViewFrame.size.width -= 10;
-    imageViewFrame.size.height -= 10;
+    imageViewFrame.origin.x += 3;
+    imageViewFrame.origin.y += 3;
+    imageViewFrame.size.width -= 6;
+    imageViewFrame.size.height -= 6;
     [[self imageView] setFrame:imageViewFrame];
+    [[self imageView] setBackgroundColor:[UIColor lightGrayColor]];
 }
 
 

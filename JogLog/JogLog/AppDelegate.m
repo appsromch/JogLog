@@ -17,6 +17,12 @@
     // Override point for customization after application launch.
     [[UIApplication sharedApplication] setStatusBarStyle:UIStatusBarStyleLightContent];
     
+    if([[[UIDevice currentDevice] model] isEqualToString:@"iPhone Simulator"]) {
+        isRunningOnSimulator = YES;
+    } else {
+        isRunningOnSimulator = NO;
+    }
+    
     return YES;
 }
 							

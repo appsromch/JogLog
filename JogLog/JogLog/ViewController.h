@@ -17,6 +17,9 @@
 #import "CustomCell.h"
 #import <QuartzCore/QuartzCore.h>
 #import "AppDelegate.h"
+#import "BackShape.h"
+#import "NextShape.h"
+#import "PlayPauseShape.h"
 
 @interface ViewController : UIViewController <CLLocationManagerDelegate, MKMapViewDelegate, MKOverlay, MFMailComposeViewControllerDelegate, UIAlertViewDelegate, UIScrollViewDelegate, UITableViewDataSource, UITableViewDelegate>
 {
@@ -72,6 +75,11 @@
     IBOutlet UIButton *playPauseButton2;
     IBOutlet UIButton *backButton;
     IBOutlet UIButton *forwardButton;
+    BackShape *backShape;
+    NextShape *nextShape;
+    PlayPauseShape *playPauseShape;
+    PlayPauseShape *playPauseShape2;
+    
     BOOL isPlaying;
     
     IBOutlet MarqueeLabel *currentlyPlayingSong;
@@ -82,6 +90,7 @@
     IBOutlet UIImageView *currentlyPlayingArtwork;
     
     IBOutlet UIView *songInfoView;
+    IBOutlet UIView *transparentSongInfoView;
 }
 
 @property (nonatomic, retain) MKPolyline* polyline;
@@ -91,6 +100,6 @@
 -(IBAction)playPauseButtonPressed:(UIButton*)sender;
 -(IBAction)backButtonPressed:(UIButton*)sender;
 -(IBAction)forwardButtonPressed:(UIButton*)sender;
-
+- (IBAction)changePage:(id)sender;
 
 @end

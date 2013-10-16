@@ -42,6 +42,13 @@
     [songsTable flashScrollIndicators];
 }
 
+- (IBAction)changePage:(id)sender {
+    UIPageControl *pager = sender;
+    int currentPage = pager.currentPage;
+    CGRect visibleRect = CGRectMake(currentPage*scrollView.frame.size.width, 0, scrollView.frame.size.width, scrollView.frame.size.height);
+    [scrollView scrollRectToVisible:visibleRect animated:YES];
+}
+
 -(void)roundCorners
 {
     runDistanceLabel.layer.cornerRadius = 7;
@@ -118,11 +125,15 @@
         [myPlayer beginGeneratingPlaybackNotifications];
         
         if(isPlaying) {
-            [playPauseButton setImage:[UIImage imageNamed:@"player_pause.png"] forState:UIControlStateNormal];
-            [playPauseButton2 setImage:[UIImage imageNamed:@"player_pause.png"] forState:UIControlStateNormal];
+            //[playPauseButton setImage:[UIImage imageNamed:@"player_pause.png"] forState:UIControlStateNormal];
+            [playPauseShape showPauseImage];
+            //[playPauseButton2 setImage:[UIImage imageNamed:@"player_pause.png"] forState:UIControlStateNormal];
+            [playPauseShape2 showPauseImage];
         } else {
-            [playPauseButton setImage:[UIImage imageNamed:@"player_play.png"] forState:UIControlStateNormal];
-            [playPauseButton2 setImage:[UIImage imageNamed:@"player_play.png"] forState:UIControlStateNormal];
+            //[playPauseButton setImage:[UIImage imageNamed:@"player_play.png"] forState:UIControlStateNormal];
+            [playPauseShape showPlayImage];
+            //[playPauseButton2 setImage:[UIImage imageNamed:@"player_play.png"] forState:UIControlStateNormal];
+            [playPauseShape2 showPlayImage];
         }
         
         MPMediaItem *song;
@@ -136,6 +147,12 @@
             
             song = (MPMediaItem *)[songList objectAtIndex:indexOfCurrentTrack];
             itemArtwork = [song valueForProperty:MPMediaItemPropertyArtwork];
+        } else {
+            [currentlyPlayingArtist setText:@"Press Play to Shuffle"];
+            [currentlyPlayingSong setText:@"Shuffle Mode"];
+            //DUPLICATE
+            [currentlyPlayingArtist2 setText:@"Press Play to Shuffle"];
+            [currentlyPlayingSong2 setText:@"Shuffle Mode"];
         }
         
         UIImage *albumArtworkImage = NULL;
@@ -150,22 +167,30 @@
             [currentlyPlayingArtwork setImage:[UIImage imageNamed:@"noartwork.png"]];
         }
         
-        currentlyPlayingSong.numberOfLines = 1;
-        currentlyPlayingSong.shadowOffset = CGSizeMake(0.0, -1.0);
-        currentlyPlayingSong.textAlignment = NSTextAlignmentCenter;
-        currentlyPlayingSong.textColor = [UIColor whiteColor];
-        currentlyPlayingSong.backgroundColor = [UIColor clearColor];
-        currentlyPlayingSong.marqueeType = MLContinuous;
-        currentlyPlayingSong.fadeLength = 7;
+    } else {
         
-        currentlyPlayingSong2.numberOfLines = 1;
-        currentlyPlayingSong2.shadowOffset = CGSizeMake(0.0, -1.0);
-        currentlyPlayingSong2.textAlignment = NSTextAlignmentCenter;
-        currentlyPlayingSong2.textColor = [UIColor whiteColor];
-        currentlyPlayingSong2.backgroundColor = [UIColor clearColor];
-        currentlyPlayingSong2.marqueeType = MLContinuous;
-        currentlyPlayingSong2.fadeLength = 7;
+        [currentlyPlayingArtist setText:@"Device Required"];
+        [currentlyPlayingSong setText:@"Cannot Play on Simulator"];
+        //DUPLICATE
+        [currentlyPlayingArtist2 setText:@"Cannot Play on Simulator"];
+        [currentlyPlayingSong2 setText:@"Device Required"];
     }
+
+    currentlyPlayingSong.numberOfLines = 1;
+    currentlyPlayingSong.shadowOffset = CGSizeMake(0.0, -1.0);
+    currentlyPlayingSong.textAlignment = NSTextAlignmentCenter;
+    currentlyPlayingSong.textColor = [UIColor whiteColor];
+    currentlyPlayingSong.backgroundColor = [UIColor clearColor];
+    currentlyPlayingSong.marqueeType = MLContinuous;
+    currentlyPlayingSong.fadeLength = 7;
+    
+    currentlyPlayingSong2.numberOfLines = 1;
+    currentlyPlayingSong2.shadowOffset = CGSizeMake(0.0, -1.0);
+    currentlyPlayingSong2.textAlignment = NSTextAlignmentCenter;
+    currentlyPlayingSong2.textColor = [UIColor whiteColor];
+    currentlyPlayingSong2.backgroundColor = [UIColor clearColor];
+    currentlyPlayingSong2.marqueeType = MLContinuous;
+    currentlyPlayingSong2.fadeLength = 7;
     
     [songsTable setBackgroundColor:[UIColor colorWithRed:0.239 green:0.447 blue:0.643 alpha:1.0]];
 }
@@ -179,6 +204,9 @@
     runDistance = 0;
     [runDistanceLabel setText:[NSString stringWithFormat:@"%.2f miles", runDistance]];
     
+    beginAndEndButton.titleLabel.lineBreakMode = NSLineBreakByWordWrapping;
+    beginAndEndButton.titleLabel.textAlignment = NSTextAlignmentCenter;
+    
     currentTime = 0;
     [self populateTimeLabel:runDurationLabel withTimeInterval:currentTime];
     runTimer = nil;
@@ -191,6 +219,22 @@
     scrollView.scrollEnabled = YES;
     scrollView.delegate = self;
     scrollView.contentSize =  CGSizeMake(scrollView.frame.size.width*2, scrollView.frame.size.height);
+    
+    //Add shape behind forwardButton, backButton and playButtons (to avoid subclassing UIButton)
+    playPauseShape = [[PlayPauseShape alloc] initWithFrame:playPauseButton.frame];
+    nextShape = [[NextShape alloc] initWithFrame:forwardButton.frame];
+    backShape = [[BackShape alloc] initWithFrame:backButton.frame];
+    playPauseShape2 = [[PlayPauseShape alloc] initWithFrame:playPauseButton2.frame];
+    [transparentSongInfoView addSubview: playPauseShape];
+    [songInfoView addSubview:nextShape];
+    [songInfoView addSubview:backShape];
+    [songInfoView addSubview:playPauseShape2];
+    [transparentSongInfoView bringSubviewToFront:playPauseButton];
+    [songInfoView bringSubviewToFront:forwardButton];
+    [songInfoView bringSubviewToFront:backButton];
+    [songInfoView bringSubviewToFront:playPauseButton2];
+    
+    
 }
 
 -(void)initializeLocationProperties
@@ -277,11 +321,13 @@
     if (itemArtwork != nil) {
         albumArtworkImage = [itemArtwork imageWithSize:CGSizeMake(250.0, 250.0)];
     }
+    
     if (albumArtworkImage) {
         [[cell imageView] setImage:albumArtworkImage];
     } else { // no album artwork
         [[cell imageView] setImage:[UIImage imageNamed:@"noartwork.png"]];
     }
+    [[cell imageView] setBackgroundColor:[UIColor lightGrayColor]];
     
     return cell;
 }
@@ -348,6 +394,7 @@
     }
     
     [songsTable reloadData];
+    [self updatePlayPauseButtons];
     
     MPMediaItem *song;
     MPMediaItemArtwork *itemArtwork;
@@ -384,14 +431,22 @@
 -(IBAction)playPauseButtonPressed:(UIButton *)sender
 {
     isPlaying = !isPlaying;
+    [self updatePlayPauseButtons];
     if(isPlaying) {
-        [playPauseButton setImage:[UIImage imageNamed:@"player_pause.png"] forState:UIControlStateNormal];
-        [playPauseButton2 setImage:[UIImage imageNamed:@"player_pause.png"] forState:UIControlStateNormal];
         [myPlayer play];
     } else {
-        [playPauseButton setImage:[UIImage imageNamed:@"player_play.png"] forState:UIControlStateNormal];
-        [playPauseButton2 setImage:[UIImage imageNamed:@"player_play.png"] forState:UIControlStateNormal];
         [myPlayer pause];
+    }
+}
+
+-(void)updatePlayPauseButtons
+{
+    if(isPlaying) {
+        [playPauseShape showPauseImage];
+        [playPauseShape2 showPauseImage];
+    } else {
+        [playPauseShape showPlayImage];
+        [playPauseShape2 showPlayImage];
     }
 }
 
@@ -400,6 +455,7 @@
     [myPlayer stop];
     [myPlayer setNowPlayingItem:(MPMediaItem *)[songList objectAtIndex:indexOfCurrentTrack]];
     [myPlayer play];
+    isPlaying = YES;
 }
 
 -(CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
@@ -504,7 +560,7 @@
         
         [recordingStatusLabel setText:@"Run is recording"];
         
-        [beginAndEndButton setTitle:@"STOP" forState:UIControlStateNormal];
+        [beginAndEndButton setTitle:@"STOP RUN" forState:UIControlStateNormal];
         
         runTimer = [NSTimer scheduledTimerWithTimeInterval:1.0 target:self selector:@selector(updateTimer:) userInfo:nil repeats:YES];
         
@@ -574,7 +630,7 @@
     if(buttonIndex == 1) {
         
         NSLog(@"Correct Alertview Method");
-        NSString *message = [NSString stringWithFormat:@"Matthew just completed a %@ run in %@ (h:m:s) with a pace of %@! Thanks for using \"Run Ragonese, Run!\"", [recentRun totalDistanceString], [recentRun totalTimeString], [recentRun averagePaceString]];
+        NSString *message = [NSString stringWithFormat:@"You just completed a %@ run in %@ (h:m:s) with a pace of %@! Thanks for using \"JogLog!\"", [recentRun totalDistanceString], [recentRun totalTimeString], [recentRun averagePaceString]];
         NSString *todayString = [self monthAndDayAndYearFromDate:[NSDate date]];
         NSString *subject = [NSString stringWithFormat:@"Your run on %@", todayString];
         [self sendStatsInEmailWithSubject:subject AndMessage:message];
