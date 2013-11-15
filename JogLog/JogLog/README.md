@@ -13,13 +13,13 @@ Currently only functional on iOS 7.0 4.0-inch retina iPhone.
 Screenshots
 ----------------
 
-![Launch Screen](http://54.200.27.11/IMG_3141.PNG)
+![Launch Screen](http://54.200.27.11/GithubImages/IMG_3141.PNG)
 
-![Player Screen](http://54.200.27.11/IMG_3142.PNG)
+![Player Screen](http://54.200.27.11/GithubImages/IMG_3142.PNG)
 
-![Running Screen](http://54.200.27.11/IMG_3139.PNG)
+![Running Screen](http://54.200.27.11/GithubImages/IMG_3139.PNG)
 
-![Run Completed](http://54.200.27.11/IMG_3140.PNG)
+![Run Completed](http://54.200.27.11/GithubImages/IMG_3140.PNG)
 
 Credits
 ----------------
@@ -30,3 +30,6 @@ Credits
     
 2.  Icons from "Glyphish's" Free Icon Collection
     http://creativecommons.org/licenses/by/3.0/us/
+    
+    
+"JogLog" Copyright 2013 Matthew Ragonese

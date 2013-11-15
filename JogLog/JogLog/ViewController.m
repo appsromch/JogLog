@@ -16,62 +16,88 @@
 
 @synthesize polyline;
 
+//Synthesize protocol properties
+@synthesize coordinate;
+@synthesize boundingMapRect;
+
 - (void)viewDidLoad
 {
     [super viewDidLoad];
     
     AD = (AppDelegate *)[[UIApplication sharedApplication] delegate];
     
-    [self initializeRunningAndUIProperties];
-    
+    //Initialize UI elements, location-tracking, and music player
+    [self initializeRunRecordingProperties];
+    [self initializeUIElements];
     [self initializeLocationProperties];
-    
     [self initializePlayerProperties];
-    
     [self roundCorners];
     
     self.navigationItem.title = @"JogLog";
 }
 
-- (void)scrollViewDidScroll:(UIScrollView *)theScrollView {
-    
-    CGFloat pageWidth = scrollView.bounds.size.width;
-    NSInteger pageNumber = floor((scrollView.contentOffset.x - pageWidth / 2) / pageWidth) + 1;
-    pageControl.currentPage = pageNumber;
-    
-    [songsTable flashScrollIndicators];
-}
-
-- (IBAction)changePage:(id)sender {
-    UIPageControl *pager = sender;
-    int currentPage = pager.currentPage;
-    CGRect visibleRect = CGRectMake(currentPage*scrollView.frame.size.width, 0, scrollView.frame.size.width, scrollView.frame.size.height);
-    [scrollView scrollRectToVisible:visibleRect animated:YES];
-}
-
--(void)roundCorners
+//Initializes properties pertaining to the recording of Runs
+-(void)initializeRunRecordingProperties
 {
-    runDistanceLabel.layer.cornerRadius = 7;
-    runDistanceLabel.layer.masksToBounds = YES;
+    routePoints = [[NSMutableArray alloc] init];
     
-    runPaceLabel.layer.cornerRadius = 7;
-    runPaceLabel.layer.masksToBounds = YES;
+    recordingRun = NO;
+    [beginAndEndButton setTitle:@"GO!" forState:UIControlStateNormal];
+    runDistance = 0;
+    [runDistanceLabel setText:[NSString stringWithFormat:@"%.2f miles", runDistance]];
     
-    runDurationLabel.layer.cornerRadius = 7;
-    runDurationLabel.layer.masksToBounds = YES;
+    beginAndEndButton.titleLabel.lineBreakMode = NSLineBreakByWordWrapping;
+    beginAndEndButton.titleLabel.textAlignment = NSTextAlignmentCenter;
     
-    recordingStatusLabel.layer.cornerRadius = 7;
-    recordingStatusLabel.layer.masksToBounds = YES;
+    currentTime = 0;
+    [self populateTimeLabel:runDurationLabel withTimeInterval:currentTime];
+    runTimer = nil;
     
-    beginAndEndButton.layer.cornerRadius = 7;
-    beginAndEndButton.layer.masksToBounds = YES;
-    beginAndEndButton.layer.borderWidth = 2;
-    beginAndEndButton.layer.borderColor = [[UIColor whiteColor] CGColor];
+    [self populatePaceLabel:runPaceLabel WithDistance:runDistance AndTime:currentTime];
     
-    songInfoView.layer.cornerRadius = 10;
-    songInfoView.layer.masksToBounds = YES;
+    [recordingStatusLabel setText:@"No Run In Progress"];
 }
 
+//Initializes constant UI elements
+-(void)initializeUIElements
+{
+    scrollView.pagingEnabled = YES;
+    scrollView.scrollEnabled = YES;
+    scrollView.delegate = self;
+    scrollView.contentSize =  CGSizeMake(scrollView.frame.size.width*2, scrollView.frame.size.height);
+    
+    //Add shape behind forwardButton, backButton and playButtons (to avoid subclassing UIButton)
+    playPauseShapeMP = [[PlayPauseShape alloc] initWithFrame:playPauseButtonMP.frame];
+    nextShapePP = [[NextShape alloc] initWithFrame:forwardButtonPP.frame];
+    backShapePP = [[BackShape alloc] initWithFrame:backButtonPP.frame];
+    playPauseShapePP = [[PlayPauseShape alloc] initWithFrame:playPauseButtonPP.frame];
+    [songInfoViewMP addSubview: playPauseShapeMP];
+    [songInfoViewPP addSubview:nextShapePP];
+    [songInfoViewPP addSubview:backShapePP];
+    [songInfoViewPP addSubview:playPauseShapePP];
+    [songInfoViewMP bringSubviewToFront:playPauseButtonMP];
+    [songInfoViewPP bringSubviewToFront:forwardButtonPP];
+    [songInfoViewPP bringSubviewToFront:backButtonPP];
+    [songInfoViewPP bringSubviewToFront:playPauseButtonPP];
+}
+
+//Initializes location-tracking properties
+-(void)initializeLocationProperties
+{
+    hasInitiallyFoundCurrentLocation = NO;
+    
+    locationManager = [[CLLocationManager alloc] init];
+    [locationManager setDesiredAccuracy:kCLLocationAccuracyBestForNavigation];
+    [locationManager setDelegate:self];
+    [locationManager startUpdatingLocation];
+    
+    [worldView setShowsUserLocation:YES];
+    [worldView setDelegate:self];
+    [worldView setUserInteractionEnabled:NO];
+    [worldView setMapType:MKMapTypeHybrid];
+}
+
+//Initializes the music player and retrieves playlist titled "JogLog" for playback within the app
 -(void)initializePlayerProperties
 {
     songList = [[NSMutableArray alloc] init];
@@ -125,34 +151,28 @@
         [myPlayer beginGeneratingPlaybackNotifications];
         
         if(isPlaying) {
-            //[playPauseButton setImage:[UIImage imageNamed:@"player_pause.png"] forState:UIControlStateNormal];
-            [playPauseShape showPauseImage];
-            //[playPauseButton2 setImage:[UIImage imageNamed:@"player_pause.png"] forState:UIControlStateNormal];
-            [playPauseShape2 showPauseImage];
+            [playPauseShapeMP showPauseImage];
+            [playPauseShapePP showPauseImage];
         } else {
-            //[playPauseButton setImage:[UIImage imageNamed:@"player_play.png"] forState:UIControlStateNormal];
-            [playPauseShape showPlayImage];
-            //[playPauseButton2 setImage:[UIImage imageNamed:@"player_play.png"] forState:UIControlStateNormal];
-            [playPauseShape2 showPlayImage];
+            [playPauseShapeMP showPlayImage];
+            [playPauseShapePP showPlayImage];
         }
         
         MPMediaItem *song;
         MPMediaItemArtwork *itemArtwork;
         if(playlistFound) {
-            [currentlyPlayingArtist setText:[NSString stringWithFormat:@"By %@", [(MPMediaItem *)[songList objectAtIndex:indexOfCurrentTrack] valueForProperty:MPMediaItemPropertyArtist]]];
-            [currentlyPlayingSong setText:[(MPMediaItem *)[songList objectAtIndex:indexOfCurrentTrack] valueForProperty:MPMediaItemPropertyTitle]];
-            //DUPLICATE
-            [currentlyPlayingArtist2 setText:[NSString stringWithFormat:@"By %@", [(MPMediaItem *)[songList objectAtIndex:indexOfCurrentTrack] valueForProperty:MPMediaItemPropertyArtist]]];
-            [currentlyPlayingSong2 setText:[(MPMediaItem *)[songList objectAtIndex:indexOfCurrentTrack] valueForProperty:MPMediaItemPropertyTitle]];
+            [currentlyPlayingArtistMP setText:[NSString stringWithFormat:@"By %@", [(MPMediaItem *)[songList objectAtIndex:indexOfCurrentTrack] valueForProperty:MPMediaItemPropertyArtist]]];
+            [currentSongLabelMP setText:[(MPMediaItem *)[songList objectAtIndex:indexOfCurrentTrack] valueForProperty:MPMediaItemPropertyTitle]];
+            [currentlyPlayingArtistPP setText:[NSString stringWithFormat:@"By %@", [(MPMediaItem *)[songList objectAtIndex:indexOfCurrentTrack] valueForProperty:MPMediaItemPropertyArtist]]];
+            [currentlySongLabelPP setText:[(MPMediaItem *)[songList objectAtIndex:indexOfCurrentTrack] valueForProperty:MPMediaItemPropertyTitle]];
             
             song = (MPMediaItem *)[songList objectAtIndex:indexOfCurrentTrack];
             itemArtwork = [song valueForProperty:MPMediaItemPropertyArtwork];
         } else {
-            [currentlyPlayingArtist setText:@"Press Play to Shuffle"];
-            [currentlyPlayingSong setText:@"Shuffle Mode"];
-            //DUPLICATE
-            [currentlyPlayingArtist2 setText:@"Press Play to Shuffle"];
-            [currentlyPlayingSong2 setText:@"Shuffle Mode"];
+            [currentlyPlayingArtistMP setText:@"Press Play to Shuffle"];
+            [currentSongLabelMP setText:@"Shuffle Mode"];
+            [currentlyPlayingArtistPP setText:@"Press Play to Shuffle"];
+            [currentlySongLabelPP setText:@"Shuffle Mode"];
         }
         
         UIImage *albumArtworkImage = NULL;
@@ -162,99 +182,58 @@
         }
         
         if (albumArtworkImage) {
-            [currentlyPlayingArtwork setImage:albumArtworkImage];
+            [currentlyPlayingArtworkPP setImage:albumArtworkImage];
         } else { // no album artwork
-            [currentlyPlayingArtwork setImage:[UIImage imageNamed:@"noartwork.png"]];
+            [currentlyPlayingArtworkPP setImage:[UIImage imageNamed:@"noartwork.png"]];
         }
         
     } else {
         
-        [currentlyPlayingArtist setText:@"Device Required"];
-        [currentlyPlayingSong setText:@"Cannot Play on Simulator"];
-        //DUPLICATE
-        [currentlyPlayingArtist2 setText:@"Cannot Play on Simulator"];
-        [currentlyPlayingSong2 setText:@"Device Required"];
+        [currentlyPlayingArtistMP setText:@"Device Required"];
+        [currentSongLabelMP setText:@"Cannot Play on Simulator"];
+        [currentlyPlayingArtistPP setText:@"Cannot Play on Simulator"];
+        [currentlySongLabelPP setText:@"Device Required"];
     }
 
-    currentlyPlayingSong.numberOfLines = 1;
-    currentlyPlayingSong.shadowOffset = CGSizeMake(0.0, -1.0);
-    currentlyPlayingSong.textAlignment = NSTextAlignmentCenter;
-    currentlyPlayingSong.textColor = [UIColor whiteColor];
-    currentlyPlayingSong.backgroundColor = [UIColor clearColor];
-    currentlyPlayingSong.marqueeType = MLContinuous;
-    currentlyPlayingSong.fadeLength = 7;
+    currentSongLabelMP.numberOfLines = 1;
+    currentSongLabelMP.shadowOffset = CGSizeMake(0.0, -1.0);
+    currentSongLabelMP.textAlignment = NSTextAlignmentCenter;
+    currentSongLabelMP.textColor = [UIColor whiteColor];
+    currentSongLabelMP.backgroundColor = [UIColor clearColor];
+    currentSongLabelMP.marqueeType = MLContinuous;
+    currentSongLabelMP.fadeLength = 7;
     
-    currentlyPlayingSong2.numberOfLines = 1;
-    currentlyPlayingSong2.shadowOffset = CGSizeMake(0.0, -1.0);
-    currentlyPlayingSong2.textAlignment = NSTextAlignmentCenter;
-    currentlyPlayingSong2.textColor = [UIColor whiteColor];
-    currentlyPlayingSong2.backgroundColor = [UIColor clearColor];
-    currentlyPlayingSong2.marqueeType = MLContinuous;
-    currentlyPlayingSong2.fadeLength = 7;
+    currentlySongLabelPP.numberOfLines = 1;
+    currentlySongLabelPP.shadowOffset = CGSizeMake(0.0, -1.0);
+    currentlySongLabelPP.textAlignment = NSTextAlignmentCenter;
+    currentlySongLabelPP.textColor = [UIColor whiteColor];
+    currentlySongLabelPP.backgroundColor = [UIColor clearColor];
+    currentlySongLabelPP.marqueeType = MLContinuous;
+    currentlySongLabelPP.fadeLength = 7;
     
     [songsTable setBackgroundColor:[UIColor colorWithRed:0.239 green:0.447 blue:0.643 alpha:1.0]];
 }
 
--(void)initializeRunningAndUIProperties
-{
-    routePoints = [[NSMutableArray alloc] init];
-    
-    recordingRun = NO;
-    [beginAndEndButton setTitle:@"GO!" forState:UIControlStateNormal];
-    runDistance = 0;
-    [runDistanceLabel setText:[NSString stringWithFormat:@"%.2f miles", runDistance]];
-    
-    beginAndEndButton.titleLabel.lineBreakMode = NSLineBreakByWordWrapping;
-    beginAndEndButton.titleLabel.textAlignment = NSTextAlignmentCenter;
-    
-    currentTime = 0;
-    [self populateTimeLabel:runDurationLabel withTimeInterval:currentTime];
-    runTimer = nil;
-    
-    [self populatePaceLabel:runPaceLabel WithDistance:runDistance AndTime:currentTime];
-    
-    [recordingStatusLabel setText:@"No Run In Progress"];
-    
-    scrollView.pagingEnabled = YES;
-    scrollView.scrollEnabled = YES;
-    scrollView.delegate = self;
-    scrollView.contentSize =  CGSizeMake(scrollView.frame.size.width*2, scrollView.frame.size.height);
-    
-    //Add shape behind forwardButton, backButton and playButtons (to avoid subclassing UIButton)
-    playPauseShape = [[PlayPauseShape alloc] initWithFrame:playPauseButton.frame];
-    nextShape = [[NextShape alloc] initWithFrame:forwardButton.frame];
-    backShape = [[BackShape alloc] initWithFrame:backButton.frame];
-    playPauseShape2 = [[PlayPauseShape alloc] initWithFrame:playPauseButton2.frame];
-    [transparentSongInfoView addSubview: playPauseShape];
-    [songInfoView addSubview:nextShape];
-    [songInfoView addSubview:backShape];
-    [songInfoView addSubview:playPauseShape2];
-    [transparentSongInfoView bringSubviewToFront:playPauseButton];
-    [songInfoView bringSubviewToFront:forwardButton];
-    [songInfoView bringSubviewToFront:backButton];
-    [songInfoView bringSubviewToFront:playPauseButton2];
-    
-    
-}
 
--(void)initializeLocationProperties
-{
-    hasInitiallyFoundCurrentLocation = NO;
-    
-    locationManager = [[CLLocationManager alloc] init];
-    [locationManager setDesiredAccuracy:kCLLocationAccuracyBestForNavigation];
-    [locationManager setDelegate:self];
-    [locationManager startUpdatingLocation];
-    
-    [worldView setShowsUserLocation:YES];
-    [worldView setDelegate:self];
-    [worldView setUserInteractionEnabled:NO];
-    [worldView setMapType:MKMapTypeHybrid];
-}
+//*** UITableView Delegation/Datasource Methods ***//
 
 -(NSInteger)numberOfSectionsInTableView:(UITableView *)tableView
 {
     return 1;
+}
+
+-(CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    return 46;
+}
+
+-(NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
+{
+    if([songList count] == 0) {
+        return 2;
+    } else {
+        return [songList count];
+    }
 }
 
 -(UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
@@ -311,11 +290,6 @@
         [cell setAccessoryView:nil];
     }
     
-    /*UIImage *songArtwork = [song valueForProperty:MPMediaItemPropertyArtwork];
-     songArtwork = [songArtwork resizableImageWithCapInsets:UIEdgeInsetsMake(0, 0, 0, 0)];
-     [[cell imageView] setImage:songArtwork];*/
-    //[[cell imageView] setImage:[song valueForProperty:MPMediaItemPropertyArtwork]];
-    
     UIImage *albumArtworkImage = NULL;
     MPMediaItemArtwork *itemArtwork = [song valueForProperty:MPMediaItemPropertyArtwork];
     if (itemArtwork != nil) {
@@ -342,21 +316,8 @@
     }
 }
 
--(void)nextTrack
-{
-    indexOfCurrentTrack ++;
-    if(indexOfCurrentTrack == [songList count])
-        indexOfCurrentTrack = 0;
-    [self stopCurrentTrackAndPlaySelection];
-}
 
--(void)previousTrack
-{
-    indexOfCurrentTrack --;
-    if(indexOfCurrentTrack == -1)
-        indexOfCurrentTrack = [songList count] -1;
-    [self stopCurrentTrackAndPlaySelection];
-}
+//*** Button Action Methods (Playback Control) ***//
 
 -(IBAction)backButtonPressed:(UIButton*)sender
 {
@@ -380,10 +341,36 @@
     }
 }
 
+-(IBAction)playPauseButtonPressed:(UIButton *)sender
+{
+    isPlaying = !isPlaying;
+    [self updatePlayPauseButtons];
+    if(isPlaying) {
+        [myPlayer play];
+    } else {
+        [myPlayer pause];
+    }
+}
+
+-(void)nextTrack
+{
+    indexOfCurrentTrack ++;
+    if(indexOfCurrentTrack == [songList count])
+        indexOfCurrentTrack = 0;
+    [self stopCurrentTrackAndPlaySelection];
+}
+
+-(void)previousTrack
+{
+    indexOfCurrentTrack --;
+    if(indexOfCurrentTrack == -1)
+        indexOfCurrentTrack = [songList count] -1;
+    [self stopCurrentTrackAndPlaySelection];
+}
+
+//AudioPlayer Switched Tracks
 -(void)handleNowPlayingItemChanged:(NSNotification *)notification
 {
-    //Playing item has changed (or just begun)
-    
     //reassign indexOfCurrentTrack
     for(int i = 0; i < [songList count]; i++)
     {
@@ -399,19 +386,17 @@
     MPMediaItem *song;
     MPMediaItemArtwork *itemArtwork;
     if(playlistFound) {
-        [currentlyPlayingArtist setText:[NSString stringWithFormat:@"By %@", [(MPMediaItem *)[songList objectAtIndex:indexOfCurrentTrack] valueForProperty:MPMediaItemPropertyArtist]]];
-        [currentlyPlayingSong setText:[(MPMediaItem *)[songList objectAtIndex:indexOfCurrentTrack] valueForProperty:MPMediaItemPropertyTitle]];
-        //DUPLICATE
-        [currentlyPlayingArtist2 setText:[NSString stringWithFormat:@"By %@", [(MPMediaItem *)[songList objectAtIndex:indexOfCurrentTrack] valueForProperty:MPMediaItemPropertyArtist]]];
-        [currentlyPlayingSong2 setText:[(MPMediaItem *)[songList objectAtIndex:indexOfCurrentTrack] valueForProperty:MPMediaItemPropertyTitle]];
+        [currentlyPlayingArtistMP setText:[NSString stringWithFormat:@"By %@", [(MPMediaItem *)[songList objectAtIndex:indexOfCurrentTrack] valueForProperty:MPMediaItemPropertyArtist]]];
+        [currentSongLabelMP setText:[(MPMediaItem *)[songList objectAtIndex:indexOfCurrentTrack] valueForProperty:MPMediaItemPropertyTitle]];
+        [currentlyPlayingArtistPP setText:[NSString stringWithFormat:@"By %@", [(MPMediaItem *)[songList objectAtIndex:indexOfCurrentTrack] valueForProperty:MPMediaItemPropertyArtist]]];
+        [currentlySongLabelPP setText:[(MPMediaItem *)[songList objectAtIndex:indexOfCurrentTrack] valueForProperty:MPMediaItemPropertyTitle]];
         song = (MPMediaItem *)[songList objectAtIndex:indexOfCurrentTrack];
         itemArtwork = [song valueForProperty:MPMediaItemPropertyArtwork];
     } else {
-        [currentlyPlayingArtist setText:@"Press Play to Shuffle"];
-        [currentlyPlayingSong setText:@"Shuffle Mode"];
-        //DUPLICATE
-        [currentlyPlayingArtist2 setText:@"Press Play to Shuffle"];
-        [currentlyPlayingSong2 setText:@"Shuffle Mode"];
+        [currentlyPlayingArtistMP setText:@"Press Play to Shuffle"];
+        [currentSongLabelMP setText:@"Shuffle Mode"];
+        [currentlyPlayingArtistPP setText:@"Press Play to Shuffle"];
+        [currentlySongLabelPP setText:@"Shuffle Mode"];
 
     }
     
@@ -422,31 +407,20 @@
     }
     
     if (albumArtworkImage) {
-        [currentlyPlayingArtwork setImage:albumArtworkImage];
+        [currentlyPlayingArtworkPP setImage:albumArtworkImage];
     } else { // no album artwork
-        [currentlyPlayingArtwork setImage:[UIImage imageNamed:@"noartwork.png"]];
-    }
-}
-
--(IBAction)playPauseButtonPressed:(UIButton *)sender
-{
-    isPlaying = !isPlaying;
-    [self updatePlayPauseButtons];
-    if(isPlaying) {
-        [myPlayer play];
-    } else {
-        [myPlayer pause];
+        [currentlyPlayingArtworkPP setImage:[UIImage imageNamed:@"noartwork.png"]];
     }
 }
 
 -(void)updatePlayPauseButtons
 {
     if(isPlaying) {
-        [playPauseShape showPauseImage];
-        [playPauseShape2 showPauseImage];
+        [playPauseShapeMP showPauseImage];
+        [playPauseShapePP showPauseImage];
     } else {
-        [playPauseShape showPlayImage];
-        [playPauseShape2 showPlayImage];
+        [playPauseShapeMP showPlayImage];
+        [playPauseShapePP showPlayImage];
     }
 }
 
@@ -458,19 +432,8 @@
     isPlaying = YES;
 }
 
--(CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
-{
-    return 46;
-}
 
--(NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
-{
-    if([songList count] == 0) {
-        return 2;
-    } else {
-        return [songList count];
-    }
-}
+//*** LocationManager/MapKit Delegation Methods ***/
 
 -(void)locationManager:(CLLocationManager *)manager didUpdateLocations:(NSArray *)locations
 {
@@ -504,9 +467,6 @@
             
             [runDistanceLabel setText:[NSString stringWithFormat:@"%.2f miles", runDistance]];
             [self populatePaceLabel:runPaceLabel WithDistance:runDistance AndTime:currentTime];
-            
-            //NSLog(@"Meters = %f, RunDistance = %f", meters, runDistance);
-            
         }
         
         if (numPoints > 1)
@@ -526,9 +486,7 @@
         }
     } else {
         
-        //self.polyline = [MKPolyline polylineWithCoordinates:nil count:0];
-        //[worldView addOverlay:self.polyline];
-        //[worldView setNeedsDisplay];
+        //Don't worry about it
     }
 }
 
@@ -537,9 +495,9 @@
     MKPolylineView* lineView = [[MKPolylineView alloc] initWithPolyline:self.polyline];
     lineView.fillColor = [UIColor redColor];
     lineView.strokeColor = [UIColor blueColor];
-    [lineView setAlpha:0.6];
+    [lineView setAlpha:0.7];
     lineView.lineCap = kCGLineCapRound;
-    lineView.lineWidth = 4;
+    lineView.lineWidth = 5;
     return lineView;
 }
 
@@ -552,6 +510,31 @@
     }
 }
 
+
+//*** PageControl Methods ***//
+
+//Changes current page of pageControl if user swipes sideways
+- (void)scrollViewDidScroll:(UIScrollView *)theScrollView {
+    
+    CGFloat pageWidth = scrollView.bounds.size.width;
+    NSInteger pageNumber = floor((scrollView.contentOffset.x - pageWidth / 2) / pageWidth) + 1;
+    pageControl.currentPage = pageNumber;
+    
+    [songsTable flashScrollIndicators];
+}
+
+//UIPageControll method for side swiping
+- (IBAction)changePage:(id)sender {
+    UIPageControl *pager = sender;
+    int currentPage = pager.currentPage;
+    CGRect visibleRect = CGRectMake(currentPage*scrollView.frame.size.width, 0, scrollView.frame.size.width, scrollView.frame.size.height);
+    [scrollView scrollRectToVisible:visibleRect animated:YES];
+}
+
+
+//*** Run Recording Methods ***//
+
+//Begins and ends the recording of a Run
 -(IBAction)beginAndEndButtonPressed:(UIButton*)sender
 {
     recordingRun = !recordingRun;
@@ -615,21 +598,19 @@
     }
 }
 
--(IBAction)playlistButtonPressed:(UIBarButtonItem*)sender
-{
-    NSLog(@"PlaylistButtonPressed");
-}
-
 -(void)locationManager:(CLLocationManager *)manager didFailWithError:(NSError *)error
 {
     NSLog(@"Could not find location: %@", error);
 }
 
+
+//*** AlertView Delegaton Method (For End Of Run) ***//
+
 -(void)alertView:(UIAlertView *)alertView didDismissWithButtonIndex:(NSInteger)buttonIndex
 {
     if(buttonIndex == 1) {
         
-        NSLog(@"Correct Alertview Method");
+        //User decided to send jogging stats in an email
         NSString *message = [NSString stringWithFormat:@"You just completed a %@ run in %@ (h:m:s) with a pace of %@! Thanks for using \"JogLog!\"", [recentRun totalDistanceString], [recentRun totalTimeString], [recentRun averagePaceString]];
         NSString *todayString = [self monthAndDayAndYearFromDate:[NSDate date]];
         NSString *subject = [NSString stringWithFormat:@"Your run on %@", todayString];
@@ -648,6 +629,9 @@
     [self populateTimeLabel:runDurationLabel withTimeInterval:0];
     [self populatePaceLabel:runPaceLabel WithDistance:runDistance AndTime:currentTime];
 }
+
+
+//*** Email Composition Methods ***//
 
 -(void)sendStatsInEmailWithSubject:(NSString*)subject AndMessage:(NSString*)message
 {
@@ -670,6 +654,9 @@
     [self dismissViewControllerAnimated:YES completion:^{}];
 }
 
+
+//Utility Methods
+
 -(NSString*)monthAndDayAndYearFromDate:(NSDate*)date
 {
     NSCalendar *cal = [[NSCalendar alloc] initWithCalendarIdentifier:NSGregorianCalendar];
@@ -680,6 +667,29 @@
     NSInteger startDay = [components day];
     
     return [NSString stringWithFormat:@"%d/%d/%d", startMonth, startDay, startYear];
+}
+
+-(void)roundCorners
+{
+    runDistanceLabel.layer.cornerRadius = 7;
+    runDistanceLabel.layer.masksToBounds = YES;
+    
+    runPaceLabel.layer.cornerRadius = 7;
+    runPaceLabel.layer.masksToBounds = YES;
+    
+    runDurationLabel.layer.cornerRadius = 7;
+    runDurationLabel.layer.masksToBounds = YES;
+    
+    recordingStatusLabel.layer.cornerRadius = 7;
+    recordingStatusLabel.layer.masksToBounds = YES;
+    
+    beginAndEndButton.layer.cornerRadius = 7;
+    beginAndEndButton.layer.masksToBounds = YES;
+    beginAndEndButton.layer.borderWidth = 2;
+    beginAndEndButton.layer.borderColor = [[UIColor whiteColor] CGColor];
+    
+    songInfoViewPP.layer.cornerRadius = 10;
+    songInfoViewPP.layer.masksToBounds = YES;
 }
 
 -(void)dealloc

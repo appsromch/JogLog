@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="4510" systemVersion="12F37" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" initialViewController="ASO-5r-h6f">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="4514" systemVersion="12F45" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" initialViewController="ASO-5r-h6f">
     <dependencies>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="3742"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="3746"/>
     </dependencies>
     <scenes>
         <!--View Controller-->
@@ -269,39 +269,32 @@
                         </subviews>
                         <color key="backgroundColor" white="0.0" alpha="1" colorSpace="calibratedWhite"/>
                     </view>
-                    <navigationItem key="navigationItem" id="Ssu-dY-V3Q">
-                        <barButtonItem key="rightBarButtonItem" title="Playlist" id="axS-b0-AZN">
-                            <connections>
-                                <action selector="playlistButtonPressed:" destination="ASO-5r-h6f" id="MCz-wH-vwe"/>
-                            </connections>
-                        </barButtonItem>
-                    </navigationItem>
+                    <navigationItem key="navigationItem" id="Ssu-dY-V3Q"/>
                     <simulatedStatusBarMetrics key="simulatedStatusBarMetrics" statusBarStyle="lightContent"/>
                     <nil key="simulatedTopBarMetrics"/>
                     <nil key="simulatedBottomBarMetrics"/>
                     <simulatedOrientationMetrics key="simulatedOrientationMetrics"/>
                     <connections>
                         <outlet property="activityIndicator" destination="1X0-6C-NEI" id="QN3-Wc-0Xz"/>
-                        <outlet property="backButton" destination="gYM-Rs-etN" id="v23-Nf-V3l"/>
+                        <outlet property="backButtonPP" destination="gYM-Rs-etN" id="g4l-yK-Hy8"/>
                         <outlet property="beginAndEndButton" destination="xg5-TY-iYl" id="oiG-mr-5m7"/>
-                        <outlet property="currentlyPlayingArtist" destination="gmp-Z0-hDU" id="DrA-dH-x8O"/>
-                        <outlet property="currentlyPlayingArtist2" destination="SqU-Fx-dVg" id="13M-P0-UVz"/>
-                        <outlet property="currentlyPlayingArtwork" destination="lF4-Rz-EPW" id="aoh-Gc-lrN"/>
-                        <outlet property="currentlyPlayingSong" destination="DRD-Bh-g9H" id="8rQ-y6-WLf"/>
-                        <outlet property="currentlyPlayingSong2" destination="OFh-UZ-xs6" id="drN-IK-jxA"/>
-                        <outlet property="forwardButton" destination="IC0-bq-2rs" id="7aP-vl-SmT"/>
+                        <outlet property="currentSongLabelMP" destination="DRD-Bh-g9H" id="qyj-pL-8zb"/>
+                        <outlet property="currentlyPlayingArtistMP" destination="gmp-Z0-hDU" id="BdF-cv-KGE"/>
+                        <outlet property="currentlyPlayingArtistPP" destination="SqU-Fx-dVg" id="yuG-4i-Vot"/>
+                        <outlet property="currentlyPlayingArtworkPP" destination="lF4-Rz-EPW" id="U4P-Qp-btl"/>
+                        <outlet property="currentlySongLabelPP" destination="OFh-UZ-xs6" id="5LE-t5-w9K"/>
+                        <outlet property="forwardButtonPP" destination="IC0-bq-2rs" id="0DP-xO-xSh"/>
                         <outlet property="pageControl" destination="g58-Ra-lYw" id="fGg-Np-78B"/>
-                        <outlet property="playPauseButton" destination="Qp2-Cy-bcW" id="mCC-v0-PE6"/>
-                        <outlet property="playPauseButton2" destination="34u-uP-1lI" id="NcZ-Qt-rbm"/>
-                        <outlet property="playlistButton" destination="axS-b0-AZN" id="Pww-HL-ydT"/>
+                        <outlet property="playPauseButtonMP" destination="Qp2-Cy-bcW" id="WGO-Yb-YNG"/>
+                        <outlet property="playPauseButtonPP" destination="34u-uP-1lI" id="LAq-Td-RQ2"/>
                         <outlet property="recordingStatusLabel" destination="a4y-Fj-UiA" id="amD-yg-P8M"/>
                         <outlet property="runDistanceLabel" destination="pmg-ou-fUb" id="2GF-v1-EqK"/>
                         <outlet property="runDurationLabel" destination="pNM-5y-u6F" id="gBL-Eu-7R5"/>
                         <outlet property="runPaceLabel" destination="tsN-Zi-sGs" id="uRR-4h-RpK"/>
                         <outlet property="scrollView" destination="icB-H4-4fu" id="Fmy-pu-0MS"/>
-                        <outlet property="songInfoView" destination="YyI-mH-8kf" id="Jge-90-QW0"/>
+                        <outlet property="songInfoViewMP" destination="r7Z-TN-swg" id="DeH-UN-MJD"/>
+                        <outlet property="songInfoViewPP" destination="YyI-mH-8kf" id="zel-te-1oU"/>
                         <outlet property="songsTable" destination="Tpz-ZR-1On" id="Jy8-m8-rU5"/>
-                        <outlet property="transparentSongInfoView" destination="r7Z-TN-swg" id="oGj-xL-9tq"/>
                         <outlet property="worldView" destination="wu2-xA-ps9" id="Off-xj-6xr"/>
                     </connections>
                 </viewController>

@@ -21,85 +21,77 @@
 #import "NextShape.h"
 #import "PlayPauseShape.h"
 
+
 @interface ViewController : UIViewController <CLLocationManagerDelegate, MKMapViewDelegate, MKOverlay, MFMailComposeViewControllerDelegate, UIAlertViewDelegate, UIScrollViewDelegate, UITableViewDataSource, UITableViewDelegate>
 {
-    __weak AppDelegate *AD;
-    
-    CLLocationManager *locationManager;
-    
-    IBOutlet MKMapView *worldView;
-    IBOutlet UIActivityIndicatorView *activityIndicator;
-    //IBOutlet UITextField *locationTitleField;
-    
-    BOOL hasInitiallyFoundCurrentLocation;
-    
-    MKPolyline *routeLine;
-    
-    NSMutableArray *routePoints;
-    
-    //IBOutlet UIButton *beginAndEndButton;
-    BOOL recordingRun;
-    IBOutlet UIButton *beginAndEndButton;
-    
-    IBOutlet UILabel *runDurationLabel;
-    NSTimer *runTimer;
-    int currentTime;
-    
-    IBOutlet UILabel *runDistanceLabel;
-    float runDistance;
-    
-    IBOutlet UILabel *runPaceLabel;
-    
-    IBOutlet UILabel *recordingStatusLabel;
-    
-    Run *recentRun;
-    
-    IBOutlet UIBarButtonItem *playlistButton;
-    
-    IBOutlet UIScrollView *scrollView;
-    IBOutlet UIPageControl *pageControl;
+    //*** AppDelegate ***//
+        __weak AppDelegate *AD;
     
     
-    //Properties for Playlist Player
+    //*** Manages both Map Page and Player Page ***//
+        IBOutlet UIScrollView *scrollView;
+        IBOutlet UIPageControl *pageControl;
     
-    IBOutlet UITableView *songsTable;
     
-    NSMutableArray *songList;
-    BOOL playlistFound;
+    //*** Map Page Variables ***//
     
-    MPMusicPlayerController *myPlayer;
+        //For location tracking and display
+        CLLocationManager *locationManager;
+        IBOutlet MKMapView *worldView;
+        BOOL hasInitiallyFoundCurrentLocation;
+        MKPolyline *routeLine;
+        NSMutableArray *routePoints;
+        IBOutlet UIActivityIndicatorView *activityIndicator;
+
+        //Variables pertaining to individual Runs
+        Run *recentRun;
+        IBOutlet UIButton *beginAndEndButton;
+        IBOutlet UILabel *runDistanceLabel;
+        IBOutlet UILabel *runDurationLabel;
+        IBOutlet UILabel *runPaceLabel;
+        IBOutlet UILabel *recordingStatusLabel;
+        BOOL recordingRun;
+        NSTimer *runTimer;
+        int currentTime;
+        float runDistance;
     
-    int indexOfCurrentTrack;
+        //Map Page UI Elements for Player Control (notated with "MP" for "MapPage")
+        IBOutlet UIView *songInfoViewMP;
+        IBOutlet UIButton *playPauseButtonMP; //button atop playPauseShape
+        PlayPauseShape *playPauseShapeMP;
+        IBOutlet MarqueeLabel *currentSongLabelMP;
+        IBOutlet UILabel *currentlyPlayingArtistMP;
+
     
-    IBOutlet UIButton *playPauseButton;
-    IBOutlet UIButton *playPauseButton2;
-    IBOutlet UIButton *backButton;
-    IBOutlet UIButton *forwardButton;
-    BackShape *backShape;
-    NextShape *nextShape;
-    PlayPauseShape *playPauseShape;
-    PlayPauseShape *playPauseShape2;
+    //*** Player Page Variables ***//
     
-    BOOL isPlaying;
-    
-    IBOutlet MarqueeLabel *currentlyPlayingSong;
-    IBOutlet UILabel *currentlyPlayingArtist;
-    
-    IBOutlet MarqueeLabel *currentlyPlayingSong2;
-    IBOutlet UILabel *currentlyPlayingArtist2;
-    IBOutlet UIImageView *currentlyPlayingArtwork;
-    
-    IBOutlet UIView *songInfoView;
-    IBOutlet UIView *transparentSongInfoView;
+        //Variables controlling songsTable
+        IBOutlet UITableView *songsTable;
+        NSMutableArray *songList;
+        BOOL playlistFound;
+        MPMusicPlayerController *myPlayer;
+        int indexOfCurrentTrack;
+        BOOL isPlaying;
+        
+        //Player Page UI Elements (notated with "PP" for "PlayerPage")
+        IBOutlet UIView *songInfoViewPP;
+        IBOutlet UIButton *playPauseButtonPP;
+        IBOutlet UIButton *backButtonPP;
+        IBOutlet UIButton *forwardButtonPP;
+        BackShape *backShapePP;
+        NextShape *nextShapePP;
+        PlayPauseShape *playPauseShapePP;
+        IBOutlet MarqueeLabel *currentlySongLabelPP;
+        IBOutlet UILabel *currentlyPlayingArtistPP;
+        IBOutlet UIImageView *currentlyPlayingArtworkPP;
 }
 
-@property (nonatomic, retain) MKPolyline* polyline;
+@property (nonatomic, retain) MKPolyline* polyline; //Line for drawing atop MKMapView
 
--(IBAction)beginAndEndButtonPressed:(UIButton*)sender;
--(IBAction)playlistButtonPressed:(UIBarButtonItem*)sender;
--(IBAction)playPauseButtonPressed:(UIButton*)sender;
--(IBAction)backButtonPressed:(UIButton*)sender;
--(IBAction)forwardButtonPressed:(UIButton*)sender;
-- (IBAction)changePage:(id)sender;
+-(IBAction)beginAndEndButtonPressed:(UIButton*)sender; //Begins and ends the recording of a Run
+-(IBAction)playPauseButtonPressed:(UIButton*)sender; //Starts or ends the playlist's current song
+-(IBAction)backButtonPressed:(UIButton*)sender; //Selects previous track in playlist for playback
+-(IBAction)forwardButtonPressed:(UIButton*)sender; //Selects next track in playlist for playback
+-(IBAction)changePage:(id)sender; //UIPageControll method for side swiping
 
 @end

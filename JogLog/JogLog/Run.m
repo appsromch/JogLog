@@ -12,10 +12,10 @@
 
 @synthesize totalDistance;
 @synthesize totalTime;
-//@synthesize averagePace;
 @synthesize totalDistanceString;
 @synthesize totalTimeString;
 @synthesize averagePaceString;
+@synthesize averagePace;
 
 -(id)initWithTotalTime:(int)time
          TotalDistance:(float)distance

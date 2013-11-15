@@ -14,7 +14,7 @@
 @property(nonatomic)float totalDistance;
 @property(nonatomic)float averagePace;
 
-//For display
+//Display Strings
 @property(nonatomic, retain)NSString *totalTimeString;
 @property(nonatomic, retain)NSString *totalDistanceString;
 @property(nonatomic, retain)NSString *averagePaceString;
